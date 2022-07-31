@@ -68,7 +68,7 @@ class AttendanceService {
         console.log(userDetail);
         // console.log(employeeId);
         try {
-            const result = await this.repository.getSalarySlip(employeeId,salaryDetail,userDetail,month,year);
+            const result = await this.repository.salarySlipSchema(employeeId,salaryDetail,userDetail,month,year);
             // console.log(result);
             return FormateData(result);
         } catch (error) {
@@ -129,7 +129,7 @@ class AttendanceService {
     //     }
     // }
     
-    // -------------------Create salary Schema----------------
+    // -------------------Create salaryslip Schema----------------
     async createSalarySlipSchema(employeeId,salaryDetail,userDetail,month,year){
 
         try {

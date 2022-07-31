@@ -289,7 +289,7 @@ class AttendanceRepository {
       
       //now we have payrolldetail , userInfo , salaryDetails using these create field for pdf
       const {PF_Employee,Basic,HRA,Convince,LTA,SPL,PF_Employer,Employee_id,ESIC_Employer,ESIC_Employee,TDS,MEDICAL,PF_NUMBER,ESIC_NUMBER} = salaryDetail.data;
-      const {name,email,dateOfBirth,phoneNumber,current_address,perma_address,adhaarNumber,panNumber,bankAccountNumber,ifsc,passBookNumber,designation,dateOfJoining} = userDetail.data;
+      const {name,email,dateOfBirth,phoneNumber,current_address,perma_address,adhaarNumber,panNumber,bankAccountNumber,ifsc,passBookNumber,designation,dateOfJoining,department} = userDetail.data;
 
       
       //---------------------------------------Calculations---------------------------------------------//
@@ -373,6 +373,7 @@ class AttendanceRepository {
         name:name,
         dateOfJoining:dateOfJoining,
         designation:designation,
+        department:department,
         panNumber:panNumber,
         adhaar:adhaarNumber,
         MEDICAL:MEDICAL
