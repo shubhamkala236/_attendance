@@ -2,6 +2,7 @@ const {APIError} = require('../utils/app-errors');
 const AttendanceService = require('../services/attendance-services');
 const {AttendanceModel} = require('../database/models');
 const {SubscribeMessage} = require('../utils');
+const {isAuthenticatedUser,authorizeRoles} = require('./middlewares/newauth');
 // const pdfService = require('../utils/sendPdf');
 // const path = require('path');
 // const render = require('xlsx');
@@ -12,8 +13,9 @@ module.exports = (app,channel) => {
     SubscribeMessage(channel,service)
     
    
-
-    app.post('/attendance',async (req,res,next) => {
+//upload attendance by admin
+    app.post('/attendance',isAuthenticatedUser,
+    authorizeRoles("admin"),async (req,res,next) => {
         
         try {
             const File = req.files.excel;
@@ -33,8 +35,9 @@ module.exports = (app,channel) => {
        
         });
 
-// Get User Attendance by id all 
-        app.get('/attendance/:id',async (req,res,next) => {
+// Get User All Attendance by id  -----------Admin
+        app.get('/attendance/:id',isAuthenticatedUser,
+        authorizeRoles("admin"),async (req,res,next) => {
         
             try {
                 const id = req.params.id;
@@ -54,15 +57,15 @@ module.exports = (app,channel) => {
            
             });    
 
-// Get User Attendance by id and month
-        app.get('/attendance-month/:id/:month',async (req,res,next) => {
+// Get My(User) All Attendance by id  ----------- User
+        app.get('/me-attendance',isAuthenticatedUser,async (req,res,next) => {
         
             try {
-                const id = req.params.id;
-                const month = req.params.month;
+                const id = req.user.employeeId;
+                console.log(id);
                 
     
-                   const {data} = await service.getEmployeeAttendanceByMonth(id,month);
+                   const {data} = await service.getEmployeeAttendance(id);
                 //    console.log(data);
                 if(data){
                     res.json({message:"fetched the details",data})
@@ -76,10 +79,58 @@ module.exports = (app,channel) => {
            
             });    
 
+// Get User Attendance by id and month and year -------------admin
+        app.get('/attendance-month/:id/:month/:year',isAuthenticatedUser,
+        authorizeRoles("admin"),async (req,res,next) => {
+        
+            try {
+                const id = req.params.id;
+                const month = req.params.month;
+                const year = req.params.year;
+                
+    
+                   const {data} = await service.getEmployeeAttendanceByMonth(id,month,year);
+                //    console.log(data);
+                if(data){
+                    res.json({message:"fetched the details",data})
+                }
 
-//get user payroll details -- all payrolls
+             } catch (error) {
+                console.log(error);
+                return next(new APIError(error.message, 401));
+                // next(error);
+               }
+           
+            });    
 
-app.get('/attendance/payroll/:id',async (req,res,next) => {
+// Get User Attendance by id and month and year -------------User
+        app.get('/me-attendance/:month/:year',isAuthenticatedUser,async (req,res,next) => {
+        
+            try {
+                const id = req.user.employeeId;
+                const month = req.params.month;
+                const year = req.params.year;
+                
+    
+                   const {data} = await service.getEmployeeAttendanceByMonth(id,month,year);
+                //    console.log(data);
+                if(data){
+                    res.json({message:"fetched the details",data})
+                }
+
+             } catch (error) {
+                console.log(error);
+                return next(new APIError(error.message, 401));
+                // next(error);
+               }
+           
+            });    
+
+// --------------------------Payroll----------------------------
+
+//get user payroll details -- all payrolls------------admin
+app.get('/attendance/payroll/:id',isAuthenticatedUser,
+authorizeRoles("admin"),async (req,res,next) => {
         
     try {
         const id = req.params.id;
@@ -99,15 +150,17 @@ app.get('/attendance/payroll/:id',async (req,res,next) => {
    
     });
 
-//Get employee payroll by specific month
-    app.get('/attendance/payroll-month/:id/:month',async (req,res,next) => {
+//Get employee payroll by specific month and year -----------------admin
+    app.get('/attendance/payroll-month/:id/:month/:year',isAuthenticatedUser,
+    authorizeRoles("admin"),async (req,res,next) => {
         
     try {
         const id = req.params.id;
         const month = req.params.month;
+        const year = req.params.year;
         
 
-           const {data} = await service.getEmployeePayrollByMonth(id,month);
+           const {data} = await service.getEmployeePayrollByMonth(id,month,year);
         //    console.log(data);
         if(data){
             res.json({message:"fetched the details",data})
@@ -120,6 +173,54 @@ app.get('/attendance/payroll/:id',async (req,res,next) => {
        }
    
     });
+
+    //payroll user gets all his payroll details ALL ------ USER
+app.get('/me-payroll',isAuthenticatedUser,async (req,res,next) => {
+        
+    try {
+        const id = req.user.employeeId;
+        
+
+           const {data} = await service.getEmployeePayroll(id);
+        //    console.log(data);
+        if(data){
+            res.json({message:"fetched the details",data})
+        }
+        
+
+     } catch (error) {
+        console.log(error);
+        return next(new APIError(error.message, 401));
+        // next(error);
+       }
+   
+    });
+
+    ///-------------------------User-specific month and year payroll-------------
+    app.get('/me-payroll/:month/:year',isAuthenticatedUser,
+    authorizeRoles("admin"),async (req,res,next) => {
+        
+    try {
+        const id = req.user.employeeId;
+        const month = req.params.month;
+        const year = req.params.year;
+        
+
+           const {data} = await service.getEmployeePayrollByMonth(id,month,year);
+        //    console.log(data);
+        if(data){
+            res.json({message:"fetched the details",data})
+        }
+
+     } catch (error) {
+        console.log(error);
+        return next(new APIError(error.message, 401));
+        // next(error);
+       }
+   
+    });
+
+    // ---------------------------------salary slip ----------------------------
 
 //Get employee Salary Slip by specific month and year
     app.get('/salarySlip/:id/:month/:year',async (req,res,next) => {

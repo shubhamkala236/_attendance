@@ -88,11 +88,12 @@ class AttendanceRepository {
   }
  
   //get user attendance by id and month 
-  async getAttendanceByIdAndMonth(id,month) {
+  async getAttendanceByIdAndMonth(id,month,year) {
     try {
       const attendanceDetail = await AttendanceModel.findOne({
         employeeId: id,
-        month:month
+        month:month,
+        year:year
       });
       // console.log(attendanceDetail);
       return attendanceDetail;
@@ -111,7 +112,7 @@ class AttendanceRepository {
       const PayrollDetail = await PayrollModel.find({
         employeeId: id,
       });
-      // console.log(attendanceDetail);
+      // console.log(PayrollDetail);
       return PayrollDetail;
     } catch (err) {
       throw new APIError(
@@ -123,11 +124,12 @@ class AttendanceRepository {
   }
   
   //get user Payroll- by month
-  async getPayrollByMonth(id,month) {
+  async getPayrollByMonth(id,month,year) {
     try {
       const PayrollDetail = await PayrollModel.findOne({
         employeeId: id,
-        month:month
+        month:month,
+        year:year
       });
       console.log(PayrollDetail);
       return PayrollDetail;
@@ -179,7 +181,7 @@ class AttendanceRepository {
         return {message:"Cannot generate Payroll"};
       }
 
-      // console.log(salaryDetail.data);
+      console.log(salaryDetail.data);
       //getting salary details
       const {PF_Employee,Basic,HRA,Convince,LTA,SPL,PF_Employer,Employee_id,ESIC_Employer,ESIC_Employee,TDS,MEDICAL,PF_NUMBER,ESIC_NUMBER} = salaryDetail.data;
       //calculation for payroll of user
@@ -192,12 +194,15 @@ class AttendanceRepository {
       }else if(attendanceDetail.month === 'Febuary'){
         totalMonthDays = 28; 
       }
-
+      // console.log(totalMonthDays);
       var WorkingDays = totalMonthDays - attendanceDetail.weekOffs;
+      var effectiveWorkingDays = 0;
       var effectiveWorkingDays = WorkingDays - attendanceDetail.leaves;
-
+      var gross = 0;
       var gross = Basic+HRA+MEDICAL+LTA+SPL; //gps
+      console.log(gross,Basic,HRA,MEDICAL,LTA,SPL);
 
+      var LOP = 0;
       var LOP  = (gross/WorkingDays)*attendanceDetail.leaves;
 
       var GPS = 0;
@@ -211,13 +216,19 @@ class AttendanceRepository {
       else if(attendanceDetail.month === 'Febuary'){
         GPS = gross*(attendanceDetail.presentDays + attendanceDetail.weekOffs)/28; 
       }
+      var deduction = 0;
+      var cih = 0;
+      var lwf = 0;
+      
+      
       //deduction
       var esic = 0;
       if(gross <= 2000 ){
         esic = (gross*2)/100;
       }
       var lwf = (gross*2)/100;
-
+      
+      console.log(deduction,lwf,cih,GPS);
       //PF
       var pf = 0;
       if(Basic<=1200){
@@ -227,6 +238,7 @@ class AttendanceRepository {
         pf = 0
       }
       //deductions
+      
       var deduction = pf + esic + lwf + TDS;
       var cih = gross - deduction;
 
@@ -250,15 +262,11 @@ class AttendanceRepository {
         });
         
         const result = await payrollGenerate.save();
-        // console.log(result);
+        console.log(result);
         return result;
   
     } catch (err) {
-      throw new APIError(
-        "API Error",
-        STATUS_CODES.INTERNAL_ERROR,
-        "Unable to Find Employee"
-      );
+      throw err.message;
     }
   }
 

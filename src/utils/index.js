@@ -1,6 +1,7 @@
 // const bcrypt = require('bcryptjs');
 // const jwt  = require('jsonwebtoken');
 // const Sib = require('sib-api-v3-sdk');
+// const {SubscribeEvents} = require('../services/attendance-services');
 
 // const nodeMailer = require('nodemailer');
 const amqplib = require('amqplib');
@@ -95,6 +96,7 @@ module.exports.FormateData = (data) => {
                 channel.consume(appQueue.queue,data=>{
                         console.log("Received data");
                         console.log(data.content.toString())
+                        service.SubscribeEvents(data.content.toString())
                 
                         channel.ack(data);
                 })

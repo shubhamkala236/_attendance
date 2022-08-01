@@ -36,10 +36,10 @@ class AttendanceService {
     }
     
     //----------------------get Employee attendance by id and month --------------------
-    async getEmployeeAttendanceByMonth(id,month){
+    async getEmployeeAttendanceByMonth(id,month,year){
 
         try {
-            const result = await this.repository.getAttendanceByIdAndMonth(id,month);
+            const result = await this.repository.getAttendanceByIdAndMonth(id,month,year);
             // console.log(result);
             return FormateData(result);
         } catch (error) {
@@ -91,10 +91,10 @@ class AttendanceService {
     }
    
     //----------------------get Employee Payroll by month--------------------
-    async getEmployeePayrollByMonth(id,month){
+    async getEmployeePayrollByMonth(id,month,year){
 
         try {
-            const result = await this.repository.getPayrollByMonth(id,month);
+            const result = await this.repository.getPayrollByMonth(id,month,year);
             console.log(result);
             return FormateData(result);
         } catch (error) {
@@ -147,7 +147,9 @@ class AttendanceService {
 
     //Events/services provided by attendance to other apis
     async SubscribeEvents(payload){
- 
+
+        payload = JSON.parse(payload);
+
         const { event, data } =  payload;
 
         const { employeeId, salaryDetail,userDetail,month,year } = data;
